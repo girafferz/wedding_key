@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>愛の証をブロックチェーンに保存</title>
+    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="./js/web3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="./js/contract_abi.js"></script>
+    <style>
+        .button {
+            width: 40%;
+            background: aquamarine;
+            height: 100px;
+            font-size: 30px;
+            border-radius: 30px;
+            color: white;
+        }
+        h2 {
+            color: cornflowerblue;
+            font-size: 40px;
+        }
+        title {
+            font-size: 10px;
+        }
+        body {
+            background-image: url('./love-keys.jpeg');
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+    <div style="text-align: center">
+        <h1 class="title">愛の証をブロックチェーンに保存</h1>
+    </div>
+    <div style="text-align: center">
+        <input class="button" style="width: 40%" type="button" value="BET" onClick="bet()">
+    </div>
+    <div style="text-align: center">
+        <input class="button" style="width: 40%" type="button" value="SET" onClick="set()">
+    </div>
+    <div style="text-align: center">
+        <input class="" style="width: 40%" type="button" value="AMOUNT" onClick="amountSum()">
+    </div>
+
+    <script>
+        var contract;
+        var userAccount;
+
+        function getQuery() {
+            if(window.location.search === "") return;
+            const variables = window.location.search.split("?")[1].split("&");
+            const obj = {};
+            variables.forEach(function(v, i) {
+                const variable = v.split("=");
+                obj[variable[0]] = String(variable[1]);
+            });
+            return obj;
+        }
+
+        function startApp() {
+            var getParams = getQuery();
+            var contractAddress = getParams.CONTRACT_ADDRESS;
+            contract = new web3js.eth.Contract(contractABI, contractAddress);
+
+            var accountInterval = setInterval(function () {
+                web3.eth.getAccounts((error, accounts) => {
+                    if (accounts[0] !== userAccount) {
+                        userAccount = accounts[0];
+                    }
+                });
+            }, 1000);
+
+        }
+
+        window.addEventListener('load', function () {
+            // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+            if (typeof web3 !== 'undefined') {
+                // Use Mist/MetaMask's provider
+                web3js = new Web3(web3.currentProvider);
+            } else {
+                // Handle the case where the user doesn't have Metamask installed
+                // Probably show them a message prompting them to install Metamask
+            }
+            // Now you can start your app & access web3 freely:
+            startApp()
+        })
+
+        function amountSum() {
+            contract.methods.amountSum().call().then(function(_val){
+                alert(_val);
+            });
+        }
+
+        function set(_s) {
+            contract.methods.set('hoge')
+                .send({ from: userAccount, value: 100000000000000000 })
+                .on("transactionHash", function (txhash) {
+                    alert("Txhash: " +  txhash);
+                })
+                .on("receipt", function (receipt) {
+                    //Process when transaction is confirmed
+                    console.log(receipt)
+                })
+                .on("error", function (error) {
+                    //Process when transaction is failed
+                    console.log(error)
+                });
+        }
+
+        function bet() {
+            contract.methods.bet()
+                .send({ from: userAccount, value: 100000000000000000 })
+                .on("transactionHash", function (txhash) {
+                    alert("Txhash: " +  txhash);
+                })
+                .on("receipt", function (receipt) {
+                    //Process when transaction is confirmed
+                    console.log(receipt)
+                })
+                .on("error", function (error) {
+                    //Process when transaction is failed
+                    console.log(error)
+                });
+        }
+
+        function getBalance() {
+            contract.methods.getBalance().call().then(function(_val){
+                alert(_val);
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>
